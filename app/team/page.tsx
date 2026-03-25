@@ -7,52 +7,48 @@ import { Users, Github, Linkedin, Mail } from "lucide-react"
 
 const teamMembers = [
   {
-    name: "Arjun Sharma",
+    name: "Basavaraju R K",
     role: "Frontend Developer",
     department: "Frontend",
     description: "Specializes in React and Next.js. Designed and built the responsive web dashboard with real-time data visualization.",
-    initials: "AS",
+    initials: "BRK",
     color: "bg-primary/10 text-primary",
+    github: "https://github.com/basavaraj-lab",
+    linkedin: "https://www.linkedin.com/in/basavaraju-r-k-055843300?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    email: "mailto:basavarajrk1718@gmail.com",
   },
   {
-    name: "Priya Patel",
+    name: "Niyas J",
     role: "Backend Developer",
     department: "Backend",
     description: "Expert in Node.js and Firebase. Built the secure API infrastructure and real-time data synchronization systems.",
-    initials: "PP",
+    initials: "NJ",
     color: "bg-secondary/10 text-secondary",
+    github: "https://github.com/Niyas-J",
+    linkedin: "https://www.linkedin.com/in/niyas-jahangeer",
+    email: "mailto:niyas@kvgce.ac.in",
   },
   {
-    name: "Rahul Kumar",
+    name: "Ganesha R S",
     role: "Hardware Engineer",
     department: "Hardware",
     description: "IoT specialist with expertise in ESP32 and sensor integration. Designed the hardware architecture and firmware.",
-    initials: "RK",
-    color: "bg-primary/10 text-primary",
+    initials: "GRS",
+    color: "bg-warning/10 text-warning-foreground",
+    github: "https://github.com/sanjuganesha176-hub",
+    linkedin: "https://www.linkedin.com/in/ganesha-r-s-31a625399?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    email: "mailto:sanjuganesha176@gmail.com",
   },
   {
-    name: "Sneha Reddy",
-    role: "AI/ML Engineer",
+    name: "Bhoomika D",
+    role: "Team Leader",
     department: "AI",
-    description: "Machine learning expert. Developed the predictive models for weather analysis and crop recommendations.",
-    initials: "SR",
-    color: "bg-secondary/10 text-secondary",
-  },
-  {
-    name: "Vikram Singh",
-    role: "Full Stack Developer",
-    department: "Full Stack",
-    description: "Versatile developer handling both frontend and backend. Integrated third-party APIs and built the solutions module.",
-    initials: "VS",
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    name: "Ananya Gupta",
-    role: "UI/UX Designer",
-    department: "Design",
-    description: "Creative designer focused on user experience. Crafted the modern SaaS interface and component design system.",
-    initials: "AG",
-    color: "bg-secondary/10 text-secondary",
+    description: "Software and Hardware Coordinator. Machine learning expert. Developed the predictive models for weather analysis and crop recommendations.",
+    initials: "BD",
+    color: "bg-accent/10 text-accent-foreground",
+    github: "https://github.com/Bhoomika01D",
+    linkedin: "https://www.linkedin.com/in/bhoomikad01",
+    email: "https://github.com/Bhoomika01D",
   },
 ]
 
@@ -128,15 +124,21 @@ export default function TeamPage() {
 
                       {/* Social Links */}
                       <div className="flex items-center gap-3">
-                        <button className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
-                          <Github className="h-4 w-4" />
-                        </button>
-                        <button className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-secondary/10 hover:text-secondary transition-colors">
-                          <Linkedin className="h-4 w-4" />
-                        </button>
-                        <button className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
-                          <Mail className="h-4 w-4" />
-                        </button>
+                        {member.github && (
+                          <a href={member.github} target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                            <Github className="h-4 w-4" />
+                          </a>
+                        )}
+                        {member.linkedin && (
+                          <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-secondary/10 hover:text-secondary transition-colors">
+                            <Linkedin className="h-4 w-4" />
+                          </a>
+                        )}
+                        {member.email && (
+                          <a href={member.email} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                            <Mail className="h-4 w-4" />
+                          </a>
+                        )}
                       </div>
                     </div>
                   </CardContent>

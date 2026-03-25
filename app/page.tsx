@@ -10,9 +10,15 @@ import { TechArchitecture } from "@/components/home/tech-architecture"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-transparent">
+      {/* Global Fixed Crop Background */}
+      <div className="fixed inset-0 z-[-1] pointer-events-none">
+        <div className="absolute inset-0 bg-[url('/crop-background.png')] bg-cover bg-center opacity-40 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+      </div>
+
       <Navbar />
-      <main>
+      <main className="relative z-10">
         <HeroSection />
         <SystemOverview />
         <SensorMonitoring />
