@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Thermometer, Droplets, Wind, Flame, Ruler } from "lucide-react"
+import { motion } from "framer-motion"
 
 interface SensorData {
   temperature: number
@@ -24,9 +25,7 @@ function getRandomSensorData(): SensorData {
 }
 
 function getStatus(type: string, value: number | boolean): { label: string; variant: "default" | "secondary" | "destructive" } {
-  if (type === "flame") {
-    return value ? { label: "Danger", variant: "destructive" } : { label: "Safe", variant: "default" }
-  }
+  if (type === "flame") return value ? { label: "Danger", variant: "destructive" } : { label: "Safe", variant: "default" }
   if (type === "temperature") {
     if (value as number > 35) return { label: "Warning", variant: "secondary" }
     if (value as number > 40) return { label: "Danger", variant: "destructive" }
@@ -56,6 +55,16 @@ const sensors = [
   { key: "distance", icon: Ruler, label: "Distance", unit: "cm", type: "distance" },
 ]
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 100 } }
+}
+
 export function SensorMonitoring() {
   const [data, setData] = useState<SensorData>(getRandomSensorData())
 
@@ -67,50 +76,78 @@ export function SensorMonitoring() {
   }, [])
 
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-2xl text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-4">Live Sensor Monitoring</h2>
-          <p className="text-muted-foreground">
-            Real-time dashboard preview with dynamic sensor readings
-          </p>
-        </div>
+    <section className="py-24 bg-slate-50 relative overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="mx-auto max-w-2xl text-center mb-16"
+        >
+          <h2 className="text-4xl font-semibold tracking-tight text-slate-900 mb-4">Live Sensor Monitoring.</h2>
+          <p className="text-slate-500 text-lg font-light">
+            Real-time tracking of critical environmental metrics within an immaculate unified dashboard.
+          </p>
+        </motion.div>
+
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5"
+        >
           {sensors.map((sensor) => {
             const value = data[sensor.key as keyof SensorData]
             const status = getStatus(sensor.type, value)
             const displayValue = sensor.type === "flame" 
-              ? (value ? "Detected" : "Not Detected")
+              ? (value ? "Alert" : "Safe")
               : `${value}${sensor.unit}`
 
             return (
-              <Card key={sensor.key} className="border-border/50 bg-card shadow-sm hover:shadow-md transition-all">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <sensor.icon className="h-5 w-5 text-primary" />
+              <motion.div key={sensor.key} variants={itemVariants}>
+                <Card className="border-slate-200/50 bg-white/70 backdrop-blur-xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300">
+                  <CardHeader className="pb-3 border-b border-slate-100/50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 shadow-sm">
+                        <sensor.icon className="h-5 w-5 text-slate-700" />
+                      </div>
+                      <Badge 
+                        variant={status.variant}
+                        className={
+                          status.variant === "default" 
+                            ? "bg-slate-100 text-slate-600 border-transparent font-medium" 
+                            : status.variant === "secondary" 
+                              ? "bg-amber-100 text-amber-700 border-transparent font-medium" 
+                              : "bg-red-100 text-red-700 border-transparent font-medium"
+                        }
+                      >
+                        {status.label}
+                      </Badge>
                     </div>
-                    <Badge 
-                      variant={status.variant}
-                      className={status.variant === "default" ? "bg-success text-success-foreground" : status.variant === "secondary" ? "bg-warning text-warning-foreground" : ""}
-                    >
-                      {status.label}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-1">{sensor.label}</p>
-                  <p className="text-2xl font-bold text-foreground">{displayValue}</p>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-slate-500 mb-1 font-medium">{sensor.label}</p>
+                    <p className="text-3xl font-semibold tracking-tight text-slate-900">{displayValue}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Values update every 3 seconds (simulated data)
-        </p>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="text-center text-[13px] text-slate-400 mt-12 font-medium tracking-wide uppercase"
+        >
+          Syncing gracefully via IoT · Updates every 3s
+        </motion.p>
       </div>
     </section>
   )
