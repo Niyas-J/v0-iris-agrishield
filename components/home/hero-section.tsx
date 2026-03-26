@@ -50,7 +50,7 @@ export function HeroSection() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="rounded-full px-8 border-primary/20 text-foreground hover:bg-primary/10 backdrop-blur-md transition-all duration-300 bg-background/50 shadow-sm">
-              <Link href="/solutions">Explore Solutions</Link>
+              <Link href="/services">Explore Services</Link>
             </Button>
           </motion.div>
         </div>
