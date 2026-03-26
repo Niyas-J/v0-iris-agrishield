@@ -21,7 +21,8 @@ import {
   TrendingDown,
   Minus,
   Eye,
-  ToggleLeft
+  ToggleLeft,
+  ScanLine
 } from "lucide-react"
 import { 
   LineChart, 
@@ -360,6 +361,45 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Object Detection Feed */}
+        <Card className="mb-8 border-border/50 bg-card shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <ScanLine className="h-5 w-5 text-primary" />
+                Live Object Detection
+              </CardTitle>
+              <Badge variant={currentData.objectDetection !== "None" ? "destructive" : "outline"} className={currentData.objectDetection !== "None" ? "animate-pulse" : ""}>
+                {currentData.objectDetection !== "None" ? `DETECTED: ${currentData.objectDetection.toUpperCase()}` : "SCANNING..."}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted flex items-center justify-center border-2 border-dashed border-border/50">
+              {currentData.objectDetection !== "None" ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-destructive/10 backdrop-blur-sm z-10">
+                  <div className="rounded-lg border-2 border-destructive bg-card p-6 text-center shadow-lg transform transition-all scale-100">
+                    <ScanLine className="mx-auto mb-4 h-12 w-12 text-destructive animate-pulse" />
+                    <h3 className="mb-2 text-xl font-bold text-destructive">Intruder / Object Detected</h3>
+                    <p className="text-sm text-foreground">Type: <span className="font-bold">{currentData.objectDetection}</span></p>
+                    <p className="text-sm text-muted-foreground mt-2">Time: {lastUpdated.toLocaleTimeString()}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center z-10 transition-opacity duration-500">
+                  <Eye className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground font-medium">Camera Feed Placeholder</p>
+                  <p className="text-sm text-muted-foreground opacity-70 mt-1">Awaiting object detection events...</p>
+                </div>
+              )}
+              
+              {/* Decorative scan overlay */}
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px] opacity-20 pointer-events-none" />
+              <div className="absolute left-0 right-0 h-1 bg-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.8)] animate-pulse pointer-events-none" style={{ top: '50%' }} />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Weather Integration */}
         <Card className="border-border/50 bg-card shadow-sm">
