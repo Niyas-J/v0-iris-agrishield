@@ -134,15 +134,32 @@ export default function DashboardPage() {
     let lat = 20.5937
     let lon = 78.9629
 
-    const fetchWeather = async (latitude: number, longitude: number, locName: string) => {
+    const fetchWeather = async (latitude: number, longitude: number, defaultLoc: string) => {
       try {
+        let exactLocation = defaultLoc;
+        // Resolve exact city/location using provided API Key (Google Maps Reverse Geocoding)
+        try {
+           const geoRes = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyCpMNsUnsGyvnWTrCauXkt_yj8cXI6tGTc`);
+           const geoData = await geoRes.json();
+           if (geoData.status === "OK" && geoData.results.length > 0) {
+              const cityComp = geoData.results[0].address_components.find((c: any) => c.types.includes("locality"));
+              if (cityComp) {
+                 exactLocation = cityComp.long_name;
+              } else {
+                 exactLocation = geoData.results[0].address_components[0].long_name;
+              }
+           }
+        } catch (err) {
+           console.log("Geocoding ignored", err);
+        }
+
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`)
         const data = await res.json()
         setWeatherData({
           temp: data.current.temperature_2m,
           humidity: data.current.relative_humidity_2m,
           condition: `Wind: ${data.current.wind_speed_10m} km/h`,
-          location: locName,
+          location: exactLocation,
         })
       } catch (e) {
         console.error("Weather fetch failed", e)

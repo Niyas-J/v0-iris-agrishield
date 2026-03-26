@@ -4,7 +4,7 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, Tractor, Landmark, ExternalLink, Leaf } from "lucide-react"
+import { Users, Tractor, Landmark, ExternalLink, Leaf, Truck } from "lucide-react"
 
 const services = [
   {
@@ -30,6 +30,14 @@ const services = [
     icon: Landmark,
     color: "blue",
     link: "https://agroscheme-ju5dam4fe-niyas-js-projects.vercel.app/"
+  },
+  {
+    id: "agri-transport",
+    title: "Agri Transport",
+    description: "Reliable logistics and freight transport solutions to securely deliver your farm produce rapidly to markets and buyers.",
+    icon: Truck,
+    color: "purple",
+    link: "https://agri-transport-gules.vercel.app"
   }
 ]
 
@@ -53,13 +61,14 @@ export default function ServicesPage() {
       </div>
 
       <main className="container mx-auto px-4 py-8 pb-32 flex-grow">
-        <div className="grid gap-10 lg:grid-cols-3 max-w-6xl mx-auto -mt-24 relative z-20">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-2 max-w-5xl mx-auto -mt-24 relative z-20">
           {services.map((service) => (
             <Card key={service.id} className="group overflow-hidden border-none shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-500 bg-white/95 backdrop-blur-xl flex flex-col rounded-3xl">
               <CardHeader className="pb-6 pt-12 px-10 text-center flex-grow">
                 <div className={`mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-3xl shadow-inner transition-all group-hover:scale-110 group-hover:rotate-3 duration-500 
                   ${service.color === "emerald" ? "bg-emerald-100 text-emerald-600 shadow-emerald-200/50" : 
                     service.color === "amber" ? "bg-amber-100 text-amber-600 shadow-amber-200/50" : 
+                    service.color === "purple" ? "bg-purple-100 text-purple-600 shadow-purple-200/50" :
                     "bg-blue-100 text-blue-600 shadow-blue-200/50"}`}>
                   <service.icon className="h-12 w-12 drop-shadow-sm" />
                 </div>
@@ -75,6 +84,7 @@ export default function ServicesPage() {
                   <Button className={`w-full rounded-2xl h-16 text-lg font-semibold shadow-lg transition-all gap-3 group-hover:gap-4 
                     ${service.color === "emerald" ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30 hover:shadow-emerald-600/50" : 
                       service.color === "amber" ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/30 hover:shadow-amber-500/50" : 
+                      service.color === "purple" ? "bg-purple-600 hover:bg-purple-700 shadow-purple-600/30 hover:shadow-purple-600/50" :
                       "bg-blue-600 hover:bg-blue-700 shadow-blue-600/30 hover:shadow-blue-600/50"} text-white`}
                   >
                     Access {service.title.split(' ')[0]} <ExternalLink className="w-5 h-5 opacity-90 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
