@@ -89,37 +89,27 @@ export default function NammaKrishiPage() {
     setIsProcessing(true)
 
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-      if (!apiKey) {
-        const fallbacks: Record<string, string> = {
-           'kn': "ನಮಸ್ಕಾರ! ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ನಾವು ಸ್ವೀಕರಿಸಿದ್ದೇವೆ. ಈ ಪ್ರತಿಕ್ರಿಯೆ ಡೆಮೊ ಮಟ್ಟದಲ್ಲಿದೆ. ದಯವಿಟ್ಟು ನಿಜವಾದ AI ಗಾಗಿ NEXT_PUBLIC_GEMINI_API_KEY ಸೇರಿಸಿ.",
-           'hi': "नमस्ते! हमें आपका प्रश्न मिला है। यह एक डेमो प्रतिक्रिया है, कृपया वास्तविक AI के लिए NEXT_PUBLIC_GEMINI_API_KEY जोड़ें।",
-           'en': "Hello! I am Namma Krishi. This is currently a mock response because your NEXT_PUBLIC_GEMINI_API_KEY is missing. Once added, I will provide actionable solutions for your crop issues!"
-        }
-        const fallbackText = fallbacks[language] || fallbacks['en']
-        setMessages(prev => [...prev, { role: "ai", text: fallbackText }])
-        speakOutLoud(fallbackText)
-        setIsProcessing(false)
-        return
-      }
-
+      // Using the Google API Key provided by the user
+      const apiKey = "AIzaSyCpMNsUnsGyvnWTrCauXkt_yj8cXI6tGTc"
+      
       const genAI = new GoogleGenerativeAI(apiKey)
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
       const targetLang = language === 'kn' ? 'Kannada' : language === 'hi' ? 'Hindi' : 'English'
 
-      const systemPrompt = `You are Namma Krishi, an expert AI agricultural assistant designed specifically for farmers. 
+      const systemPrompt = `You are Namma Krishi, an expert AI agricultural assistant designed specifically for farmers in India. 
 Tone & Behavior:
-- Friendly, respectful, and simple communication.
+- Friendly, respectful, and highly accurate.
 - Act like a helpful human agriculture expert on a phone call.
+- Provide scientifically accurate, localized farming advice.
 - NEVER use technical jargon or markdown formatting like **bold** or *italics*. Respond in plain text suitable for Text-to-Speech engines.
-- The output language must strictly align with the user's requested language: ${targetLang}.
+- The output language must strictly align with the user's requested language: ${targetLang}. If Kannada is requested, you MUST reply exclusively in fluent and accurate Kannada.
 
 Structure your response simply:
 1. Identify the problem they mentioned
-2. Explain a simple cause
-3. Provide a clear, actionable solution and/or fertilizer suggestion
+2. Explain the root cause
+3. Provide a clear, highly accurate, actionable solution, fertilizer, or pesticide suggestion
 
-Keep it brief (max 3 sentences) and highly practical. Make sure it sounds totally natural when spoken aloud.
+Keep it brief (max 3-4 sentences), incredibly practical and accurate. Make sure it sounds totally natural when spoken aloud.
 User query: "${text}"`
 
       const result = await model.generateContent(systemPrompt)
@@ -151,7 +141,11 @@ User query: "${text}"`
   }
 
   const sendSMS = () => {
-    alert("Twilio/Fast2SMS Integration Demo\n\nSMS Report successfully sent to your registered mobile number bridging the offline gap!")
+    const lastAiMessage = messages.filter(m => m.role === 'ai').pop()?.text || "Namma Krishi Report"
+    const text = encodeURIComponent(`Namma Krishi Report:\n\n${lastAiMessage}`)
+    
+    // Attempt standard native SMS protocol sending the requested AI output to the target phone number
+    window.open(`sms:+918217469646?body=${text}`, '_self')
   }
 
   return (
