@@ -13,7 +13,7 @@ export default function HomePage() {
     <div className="relative min-h-screen bg-transparent">
       {/* Global Fixed Crop Background */}
       <div className="fixed inset-0 z-[-1] pointer-events-none">
-        <div className="absolute inset-0 bg-[url('/crop-background.png')] bg-cover bg-center opacity-40 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay" style={{backgroundImage: "var(--crop-bg)"}} />
         <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
       </div>
 

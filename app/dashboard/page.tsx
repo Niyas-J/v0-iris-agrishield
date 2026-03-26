@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import { ref, onValue } from "firebase/database"
+import { database } from "@/lib/firebase"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
@@ -17,7 +19,9 @@ import {
   RefreshCw,
   TrendingUp,
   TrendingDown,
-  Minus
+  Minus,
+  Eye,
+  ToggleLeft
 } from "lucide-react"
 import { 
   LineChart, 
@@ -37,6 +41,8 @@ interface SensorData {
   gasLevel: number
   flameDetected: boolean
   distance: number
+  button: boolean
+  objectDetection: string
   timestamp: Date
 }
 
@@ -54,6 +60,8 @@ function generateSensorData(): SensorData {
     gasLevel: Math.round(50 + Math.random() * 350),
     flameDetected: Math.random() > 0.95,
     distance: Math.round((15 + Math.random() * 85) * 10) / 10,
+    button: Math.random() > 0.5,
+    objectDetection: Math.random() > 0.8 ? "Person" : "None",
     timestamp: new Date(),
   }
 }
@@ -67,7 +75,7 @@ function generateHistoricalData(count: number) {
   }))
 }
 
-function getStatus(type: string, value: number | boolean): { label: string; variant: "default" | "secondary" | "destructive" } {
+function getStatus(type: string, value: number | boolean | string): { label: string; variant: "default" | "secondary" | "destructive" } {
   if (type === "flame") {
     return value ? { label: "DANGER", variant: "destructive" } : { label: "SAFE", variant: "default" }
   }
@@ -88,6 +96,12 @@ function getStatus(type: string, value: number | boolean): { label: string; vari
   if (type === "distance") {
     if (value as number < 15) return { label: "ALERT", variant: "secondary" }
     return { label: "CLEAR", variant: "default" }
+  }
+  if (type === "button") {
+    return value ? { label: "PRESSED", variant: "secondary" } : { label: "RELEASED", variant: "default" }
+  }
+  if (type === "object") {
+    return value !== "None" ? { label: "DETECTED", variant: "secondary" } : { label: "CLEAR", variant: "default" }
   }
   return { label: "NORMAL", variant: "default" }
 }
@@ -113,25 +127,63 @@ export default function DashboardPage() {
   const [lastUpdated, setLastUpdated] = useState(new Date())
 
   useEffect(() => {
-    if (!isLiveMode) return
+    if (!isLiveMode) {
+      const interval = setInterval(() => {
+        setCurrentData(prev => {
+          setPreviousData(prev)
+          return generateSensorData()
+        })
+        setLastUpdated(new Date())
+        setChartData(prev => {
+          const newData = [...prev.slice(1), {
+            time: "now",
+            temperature: Math.round((22 + Math.random() * 15) * 10) / 10,
+            humidity: Math.round((40 + Math.random() * 35) * 10) / 10,
+            gasLevel: Math.round(80 + Math.random() * 200),
+          }]
+          return newData.map((d, i) => ({ ...d, time: `${i * 5}m` }))
+        })
+      }, 2000)
 
-    const interval = setInterval(() => {
-      setPreviousData(currentData)
-      setCurrentData(generateSensorData())
-      setLastUpdated(new Date())
-      setChartData(prev => {
-        const newData = [...prev.slice(1), {
-          time: "now",
-          temperature: Math.round((22 + Math.random() * 15) * 10) / 10,
-          humidity: Math.round((40 + Math.random() * 35) * 10) / 10,
-          gasLevel: Math.round(80 + Math.random() * 200),
-        }]
-        return newData.map((d, i) => ({ ...d, time: `${i * 5}m` }))
-      })
-    }, 2000)
+      return () => clearInterval(interval)
+    }
 
-    return () => clearInterval(interval)
-  }, [isLiveMode, currentData])
+    // Live mode: Connect to Firebase Realtime Database
+    const sensorsRef = ref(database, 'sensors')
+    
+    const unsubscribe = onValue(sensorsRef, (snapshot) => {
+      const data = snapshot.val()
+      if (data) {
+        setCurrentData(prev => {
+          setPreviousData(prev)
+          return {
+            temperature: data.temperature ?? 0,
+            humidity: data.humidity ?? 0,
+            gasLevel: data.gasLevel ?? 0,
+            flameDetected: data.fire ?? false,
+            distance: data.distance ?? 0,
+            button: data.button ?? false,
+            objectDetection: data.object ?? "None",
+            timestamp: new Date()
+          }
+        })
+        setLastUpdated(new Date())
+        setChartData(prev => {
+          const newData = [...prev.slice(1), {
+            time: "now",
+            temperature: data.temperature ?? 0,
+            humidity: data.humidity ?? 0,
+            gasLevel: data.gasLevel ?? 0,
+          }]
+          return newData.map((d, i) => ({ ...d, time: `${i * 5}m` }))
+        })
+      }
+    }, (error) => {
+      console.error("Firebase subscription error:", error)
+    })
+
+    return () => unsubscribe()
+  }, [isLiveMode])
 
   const sensors = [
     { key: "temperature", icon: Thermometer, label: "Temperature", unit: "°C", type: "temperature", value: currentData.temperature, prev: previousData.temperature },
@@ -139,6 +191,8 @@ export default function DashboardPage() {
     { key: "gasLevel", icon: Wind, label: "Gas Level", unit: "ppm", type: "gas", value: currentData.gasLevel, prev: previousData.gasLevel },
     { key: "flameDetected", icon: Flame, label: "Flame Detection", unit: "", type: "flame", value: currentData.flameDetected, prev: previousData.flameDetected },
     { key: "distance", icon: Ruler, label: "Distance", unit: "cm", type: "distance", value: currentData.distance, prev: previousData.distance },
+    { key: "button", icon: ToggleLeft, label: "Button State", unit: "", type: "button", value: currentData.button, prev: previousData.button },
+    { key: "objectDetection", icon: Eye, label: "Object Detection", unit: "", type: "object", value: currentData.objectDetection, prev: previousData.objectDetection },
   ]
 
   return (
@@ -182,8 +236,14 @@ export default function DashboardPage() {
             const status = getStatus(sensor.type, sensor.value)
             const displayValue = sensor.type === "flame" 
               ? (sensor.value ? "DETECTED" : "CLEAR")
+              : sensor.type === "button"
+              ? (sensor.value ? "PRESSED" : "NOT PRESSED")
+              : sensor.type === "object"
+              ? sensor.value
               : `${sensor.value}${sensor.unit}`
-            const trend = sensor.type !== "flame" ? getTrend(sensor.value as number, sensor.prev as number) : null
+            const trend = (sensor.type !== "flame" && sensor.type !== "button" && sensor.type !== "object") 
+              ? getTrend(sensor.value as number, sensor.prev as number) 
+              : null
 
             return (
               <Card key={sensor.key} className="border-border/50 bg-card shadow-sm">
