@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Mic, MicOff, PhoneCall, Bot, User, Volume2, MessageSquare, ImageUp } from "lucide-react"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
 interface Message {
   role: "user" | "ai"
@@ -88,17 +89,44 @@ export default function NammaKrishiPage() {
     setIsProcessing(true)
 
     try {
-      const res = await fetch("/api/namma-krishi", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text, language })
-      })
-      const data = await res.json()
-      
-      const aiResponse = data.text || "Sorry, I am having trouble connecting to my servers."
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+      if (!apiKey) {
+        const fallbacks: Record<string, string> = {
+           'kn': "ನಮಸ್ಕಾರ! ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ನಾವು ಸ್ವೀಕರಿಸಿದ್ದೇವೆ. ಈ ಪ್ರತಿಕ್ರಿಯೆ ಡೆಮೊ ಮಟ್ಟದಲ್ಲಿದೆ. ದಯವಿಟ್ಟು ನಿಜವಾದ AI ಗಾಗಿ NEXT_PUBLIC_GEMINI_API_KEY ಸೇರಿಸಿ.",
+           'hi': "नमस्ते! हमें आपका प्रश्न मिला है। यह एक डेमो प्रतिक्रिया है, कृपया वास्तविक AI के लिए NEXT_PUBLIC_GEMINI_API_KEY जोड़ें।",
+           'en': "Hello! I am Namma Krishi. This is currently a mock response because your NEXT_PUBLIC_GEMINI_API_KEY is missing. Once added, I will provide actionable solutions for your crop issues!"
+        }
+        const fallbackText = fallbacks[language] || fallbacks['en']
+        setMessages(prev => [...prev, { role: "ai", text: fallbackText }])
+        speakOutLoud(fallbackText)
+        setIsProcessing(false)
+        return
+      }
+
+      const genAI = new GoogleGenerativeAI(apiKey)
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+      const targetLang = language === 'kn' ? 'Kannada' : language === 'hi' ? 'Hindi' : 'English'
+
+      const systemPrompt = `You are Namma Krishi, an expert AI agricultural assistant designed specifically for farmers. 
+Tone & Behavior:
+- Friendly, respectful, and simple communication.
+- Act like a helpful human agriculture expert on a phone call.
+- NEVER use technical jargon or markdown formatting like **bold** or *italics*. Respond in plain text suitable for Text-to-Speech engines.
+- The output language must strictly align with the user's requested language: ${targetLang}.
+
+Structure your response simply:
+1. Identify the problem they mentioned
+2. Explain a simple cause
+3. Provide a clear, actionable solution and/or fertilizer suggestion
+
+Keep it brief (max 3 sentences) and highly practical. Make sure it sounds totally natural when spoken aloud.
+User query: "${text}"`
+
+      const result = await model.generateContent(systemPrompt)
+      const response = await result.response
+      const aiResponse = response.text().replace(/\*/g, '').trim() || "Sorry, I am having trouble connecting to my servers."
 
       setMessages(prev => [...prev, { role: "ai", text: aiResponse }])
-      
       speakOutLoud(aiResponse)
 
     } catch (error) {
