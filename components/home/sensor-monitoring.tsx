@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Thermometer, Droplets, Wind, Flame, Ruler } from "lucide-react"
+import { Thermometer, Droplets, Wind, Flame, Ruler, Eye, ToggleLeft } from "lucide-react"
 import { motion } from "framer-motion"
+import { ref, onValue } from "firebase/database"
+import { database } from "@/lib/firebase"
 
 interface SensorData {
   temperature: number
@@ -12,6 +14,8 @@ interface SensorData {
   gasLevel: number
   flameDetected: boolean
   distance: number
+  button: boolean
+  objectDetection: string
 }
 
 function getRandomSensorData(): SensorData {
@@ -21,10 +25,12 @@ function getRandomSensorData(): SensorData {
     gasLevel: Math.round(Math.random() * 500),
     flameDetected: Math.random() > 0.9,
     distance: Math.round((10 + Math.random() * 90) * 10) / 10,
+    button: Math.random() > 0.5,
+    objectDetection: "None"
   }
 }
 
-function getStatus(type: string, value: number | boolean): { label: string; variant: "default" | "secondary" | "destructive" } {
+function getStatus(type: string, value: number | boolean | string): { label: string; variant: "default" | "secondary" | "destructive" } {
   if (type === "flame") return value ? { label: "Danger", variant: "destructive" } : { label: "Safe", variant: "default" }
   if (type === "temperature") {
     if (value as number > 35) return { label: "Warning", variant: "secondary" }
@@ -44,6 +50,12 @@ function getStatus(type: string, value: number | boolean): { label: string; vari
     if (value as number < 20) return { label: "Warning", variant: "secondary" }
     return { label: "Safe", variant: "default" }
   }
+  if (type === "button") {
+    return value ? { label: "Pressed", variant: "secondary" } : { label: "Released", variant: "default" }
+  }
+  if (type === "object") {
+    return value !== "None" ? { label: "Detected", variant: "secondary" } : { label: "Clear", variant: "default" }
+  }
   return { label: "Safe", variant: "default" }
 }
 
@@ -53,6 +65,8 @@ const sensors = [
   { key: "gasLevel", icon: Wind, label: "Gas Level", unit: "ppm", type: "gas" },
   { key: "flameDetected", icon: Flame, label: "Flame Detection", unit: "", type: "flame" },
   { key: "distance", icon: Ruler, label: "Distance", unit: "cm", type: "distance" },
+  { key: "button", icon: ToggleLeft, label: "Button State", unit: "", type: "button" },
+  { key: "objectDetection", icon: Eye, label: "Object Detection", unit: "", type: "object" },
 ]
 
 const containerVariants = {
@@ -62,17 +76,33 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, scale: 0.95 },
-  show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 100 } }
+  show: { opacity: 1, scale: 1, transition: { type: "spring" as const, stiffness: 100 } }
 }
 
 export function SensorMonitoring() {
   const [data, setData] = useState<SensorData>(getRandomSensorData())
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setData(getRandomSensorData())
-    }, 3000)
-    return () => clearInterval(interval)
+    const sensorsRef = ref(database, 'sensors')
+    
+    const unsubscribe = onValue(sensorsRef, (snapshot) => {
+      const dbData = snapshot.val()
+      if (dbData) {
+        setData({
+          temperature: dbData.temperature ?? 0,
+          humidity: dbData.humidity ?? 0,
+          gasLevel: dbData.gasLevel ?? 0,
+          flameDetected: dbData.fire ?? false,
+          distance: dbData.distance ?? 0,
+          button: dbData.button ?? false,
+          objectDetection: dbData.object ?? "None",
+        })
+      }
+    }, (error) => {
+      console.error("Firebase subscription error:", error)
+    })
+
+    return () => unsubscribe()
   }, [])
 
   return (
@@ -105,6 +135,10 @@ export function SensorMonitoring() {
             const status = getStatus(sensor.type, value)
             const displayValue = sensor.type === "flame" 
               ? (value ? "Alert" : "Safe")
+              : sensor.type === "button"
+              ? (value ? "PRESSED" : "NOT PRESSED")
+              : sensor.type === "object"
+              ? value as string
               : `${value}${sensor.unit}`
 
             return (
@@ -146,7 +180,7 @@ export function SensorMonitoring() {
           transition={{ delay: 0.5, duration: 0.5 }}
           className="text-center text-[13px] text-slate-400 mt-12 font-medium tracking-wide uppercase"
         >
-          Syncing gracefully via IoT · Updates every 3s
+          Syncing gracefully via Firebase IoT · Real-time Updates
         </motion.p>
       </div>
     </section>

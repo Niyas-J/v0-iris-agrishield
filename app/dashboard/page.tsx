@@ -113,12 +113,7 @@ function getTrend(current: number, previous: number) {
   return { icon: Minus, color: "text-muted-foreground" }
 }
 
-const mockWeather: WeatherData = {
-  temp: 28,
-  humidity: 65,
-  condition: "Partly Cloudy",
-  location: "Field Station A",
-}
+// Replaced by real-time hook in component
 
 export default function DashboardPage() {
   const [isLiveMode, setIsLiveMode] = useState(true)
@@ -126,6 +121,43 @@ export default function DashboardPage() {
   const [previousData, setPreviousData] = useState<SensorData>(generateSensorData())
   const [chartData, setChartData] = useState(generateHistoricalData(12))
   const [lastUpdated, setLastUpdated] = useState(new Date())
+  const [weatherData, setWeatherData] = useState<WeatherData>({
+    temp: 0,
+    humidity: 0,
+    condition: "Loading...",
+    location: "Locating",
+  })
+
+  useEffect(() => {
+    let lat = 20.5937
+    let lon = 78.9629
+
+    const fetchWeather = async (latitude: number, longitude: number, locName: string) => {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`)
+        const data = await res.json()
+        setWeatherData({
+          temp: data.current.temperature_2m,
+          humidity: data.current.relative_humidity_2m,
+          condition: `Wind: ${data.current.wind_speed_10m} km/h`,
+          location: locName,
+        })
+      } catch (e) {
+        console.error("Weather fetch failed", e)
+      }
+    }
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchWeather(position.coords.latitude, position.coords.longitude, "Local Field")
+        },
+        () => fetchWeather(lat, lon, "Central Farm")
+      )
+    } else {
+      fetchWeather(lat, lon, "Central Farm")
+    }
+  }, [])
 
   useEffect(() => {
     if (!isLiveMode) {
@@ -416,19 +448,19 @@ export default function DashboardPage() {
             <div className="grid gap-6 sm:grid-cols-4">
               <div className="text-center p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground mb-1">Location</p>
-                <p className="text-lg font-semibold text-foreground">{mockWeather.location}</p>
+                <p className="text-lg font-semibold text-foreground">{weatherData.location}</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground mb-1">Temperature</p>
-                <p className="text-2xl font-bold text-foreground">{mockWeather.temp}°C</p>
+                <p className="text-2xl font-bold text-foreground">{weatherData.temp}°C</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground mb-1">Humidity</p>
-                <p className="text-2xl font-bold text-foreground">{mockWeather.humidity}%</p>
+                <p className="text-2xl font-bold text-foreground">{weatherData.humidity}%</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground mb-1">Condition</p>
-                <p className="text-lg font-semibold text-foreground">{mockWeather.condition}</p>
+                <p className="text-lg font-semibold text-foreground">{weatherData.condition}</p>
               </div>
             </div>
           </CardContent>

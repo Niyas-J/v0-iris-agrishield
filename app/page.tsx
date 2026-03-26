@@ -7,6 +7,8 @@ import { SmartAlerts } from "@/components/home/smart-alerts"
 import { AIInsights } from "@/components/home/ai-insights"
 import { HardwareIntegration } from "@/components/home/hardware-integration"
 import { TechArchitecture } from "@/components/home/tech-architecture"
+import { CropMarketInsights } from "@/components/home/crop-market-insights"
+import { WeatherIntegration } from "@/components/home/weather-integration"
 
 export default function HomePage() {
   return (
@@ -21,7 +23,9 @@ export default function HomePage() {
       <main className="relative z-10">
         <HeroSection />
         <SystemOverview />
+        <CropMarketInsights />
         <SensorMonitoring />
+        <WeatherIntegration />
         <SmartAlerts />
         <AIInsights />
         <HardwareIntegration />
