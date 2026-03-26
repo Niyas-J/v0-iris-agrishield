@@ -13,7 +13,8 @@ const services = [
     description: "Find reliable agricultural laborers and seamlessly connect with skilled workers directly around your local farm area.",
     icon: Users,
     color: "emerald",
-    link: "https://agrilink-nine-murex.vercel.app/login"
+    link: "https://agrilink-nine-murex.vercel.app/login",
+    image: "/images/services/labours.png"
   },
   {
     id: "agrirent-equipments",
@@ -21,7 +22,8 @@ const services = [
     description: "Rent advanced farming equipment like tractors, drones, and harvesters instantly without heavy upfront investments.",
     icon: Tractor,
     color: "amber",
-    link: "https://agrirent-three.vercel.app/"
+    link: "https://agrirent-three.vercel.app/",
+    image: "/images/services/equipments.png"
   },
   {
     id: "govt-schemes",
@@ -29,7 +31,8 @@ const services = [
     description: "Explore and apply for localized government agricultural initiatives, subsidies, and financial support schemes tracking seamlessly.",
     icon: Landmark,
     color: "blue",
-    link: "https://agroscheme-ju5dam4fe-niyas-js-projects.vercel.app/"
+    link: "https://agroscheme-ju5dam4fe-niyas-js-projects.vercel.app/",
+    image: "/images/services/schemes.png"
   },
   {
     id: "agri-transport",
@@ -37,7 +40,8 @@ const services = [
     description: "Reliable logistics and freight transport solutions to securely deliver your farm produce rapidly to markets and buyers.",
     icon: Truck,
     color: "purple",
-    link: "https://agri-transport-gules.vercel.app"
+    link: "https://agri-transport-gules.vercel.app",
+    image: "/images/services/travels.png"
   }
 ]
 
@@ -64,13 +68,17 @@ export default function ServicesPage() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-2 max-w-5xl mx-auto -mt-24 relative z-20">
           {services.map((service) => (
             <Card key={service.id} className="group overflow-hidden border-none shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-500 bg-white/95 backdrop-blur-xl flex flex-col rounded-3xl">
-              <CardHeader className="pb-6 pt-12 px-10 text-center flex-grow">
-                <div className={`mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-3xl shadow-inner transition-all group-hover:scale-110 group-hover:rotate-3 duration-500 
-                  ${service.color === "emerald" ? "bg-emerald-100 text-emerald-600 shadow-emerald-200/50" : 
-                    service.color === "amber" ? "bg-amber-100 text-amber-600 shadow-amber-200/50" : 
-                    service.color === "purple" ? "bg-purple-100 text-purple-600 shadow-purple-200/50" :
-                    "bg-blue-100 text-blue-600 shadow-blue-200/50"}`}>
-                  <service.icon className="h-12 w-12 drop-shadow-sm" />
+              <div className="h-56 w-full overflow-hidden relative">
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all z-10 duration-500"></div>
+                <img src={service.image} alt={service.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              </div>
+              <CardHeader className="pb-6 pt-0 px-10 text-center flex-grow relative z-20">
+                <div className={`mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl shadow-inner transition-all group-hover:scale-110 group-hover:rotate-3 duration-500 bg-white
+                  ${service.color === "emerald" ? "text-emerald-600 shadow-emerald-200/50" : 
+                    service.color === "amber" ? "text-amber-600 shadow-amber-200/50" : 
+                    service.color === "purple" ? "text-purple-600 shadow-purple-200/50" :
+                    "text-blue-600 shadow-blue-200/50"} -mt-12 outline outline-4 outline-white/80 backdrop-blur-sm z-30`}>
+                  <service.icon className="h-10 w-10 drop-shadow-sm" />
                 </div>
                 <CardTitle className="text-3xl font-extrabold text-slate-800 mb-4">{service.title}</CardTitle>
                 <CardContent className="p-0">
