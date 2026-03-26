@@ -91,11 +91,11 @@ export function SensorMonitoring() {
         setData({
           temperature: dbData.temperature ?? 0,
           humidity: dbData.humidity ?? 0,
-          gasLevel: dbData.gasLevel ?? 0,
+          gasLevel: dbData.gasLevel ?? (dbData.gasDetected ? 450 : 60),
           flameDetected: dbData.fire ?? false,
           distance: dbData.distance ?? 0,
           button: dbData.button ?? false,
-          objectDetection: dbData.object ?? "None",
+          objectDetection: dbData.objectDetection ?? (dbData.object ? "MOTION DETECTED" : "None"),
         })
       }
     }, (error) => {

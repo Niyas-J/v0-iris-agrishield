@@ -62,7 +62,7 @@ function generateSensorData(): SensorData {
     flameDetected: Math.random() > 0.95,
     distance: Math.round((15 + Math.random() * 85) * 10) / 10,
     button: Math.random() > 0.5,
-    objectDetection: Math.random() > 0.8 ? "Person" : "None",
+    objectDetection: Math.random() > 0.8 ? "MOTION DETECTED" : "None",
     timestamp: new Date(),
   }
 }
@@ -192,11 +192,11 @@ export default function DashboardPage() {
           return {
             temperature: data.temperature ?? 0,
             humidity: data.humidity ?? 0,
-            gasLevel: data.gasLevel ?? 0,
+            gasLevel: data.gasLevel ?? (data.gasDetected ? 450 : 60),
             flameDetected: data.fire ?? false,
             distance: data.distance ?? 0,
             button: data.button ?? false,
-            objectDetection: data.object ?? "None",
+            objectDetection: data.objectDetection ?? (data.object ? "MOTION DETECTED" : "None"),
             timestamp: new Date()
           }
         })
@@ -206,7 +206,7 @@ export default function DashboardPage() {
             time: "now",
             temperature: data.temperature ?? 0,
             humidity: data.humidity ?? 0,
-            gasLevel: data.gasLevel ?? 0,
+            gasLevel: data.gasLevel ?? (data.gasDetected ? 450 : 60),
           }]
           return newData.map((d, i) => ({ ...d, time: `${i * 5}m` }))
         })
